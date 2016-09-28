@@ -1,8 +1,8 @@
 //
-// User.swift
+//  User.swift
 //
-// Copyright © 2016 Peter Zignego. All rights reserved.
-//
+// Copyright © 2016 Peter Zignego,  All rights reserved.
+// Adapted to use Vapor by Philip Sidell
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
 // in the Software without restriction, including without limitation the rights
@@ -22,7 +22,7 @@
 // THE SOFTWARE.
 
 public struct User {
-    
+
     public struct Profile {
         internal(set) public var firstName: String?
         internal(set) public var lastName: String?
@@ -36,7 +36,7 @@ public struct User {
         internal(set) public var image72: String?
         internal(set) public var image192: String?
         internal(set) public var customProfile: CustomProfile?
-        
+
         internal init?(profile: [String: Any]?) {
             firstName = profile?["first_name"] as? String
             lastName = profile?["last_name"] as? String
@@ -52,8 +52,8 @@ public struct User {
             customProfile = CustomProfile(customFields: profile?["fields"] as? [String: Any])
         }
     }
-    
-    
+
+
     public let id: String?
     internal(set) public var name: String?
     internal(set) public var deleted: Bool?
@@ -76,7 +76,7 @@ public struct User {
     internal(set) public var preferences: [String: Any]?
     // Client properties
     internal(set) public var userGroups: [String: String]?
-    
+
     internal init?(user: [String: Any]?) {
         id = user?["id"] as? String
         name = user?["name"] as? String
@@ -98,7 +98,7 @@ public struct User {
         timeZoneOffSet = user?["tz_offset"] as? Int
         preferences = user?["prefs"] as? [String: Any]
     }
-    
+
     internal init?(id: String?) {
         self.id = id
         self.isBot = nil

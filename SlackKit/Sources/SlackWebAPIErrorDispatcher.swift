@@ -1,8 +1,8 @@
 //
-// SlackWebAPIErrorHandling.swift
-//
-// Copyright © 2016 Peter Zignego. All rights reserved.
-//
+//  SlackWebAPIErrorDispatcher.swift
+
+// Copyright © 2016 Peter Zignego,  All rights reserved.
+// Adapted to use Vapor by Philip Sidell
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
 // in the Software without restriction, including without limitation the rights
@@ -21,7 +21,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-public enum SlackError: ErrorProtocol {
+public enum SlackError: Error {
     case AccountInactive
     case AlreadyArchived
     case AlreadyInChannel
@@ -112,7 +112,7 @@ public enum SlackError: ErrorProtocol {
 }
 
 internal struct ErrorDispatcher {
-    
+
     static func dispatch(error: String) -> SlackError {
         switch error {
         case "account_inactive":

@@ -1,8 +1,8 @@
 //
-// UserGroup.swift
+//  UserGroup.swift
 //
-// Copyright © 2016 Peter Zignego. All rights reserved.
-//
+// Copyright © 2016 Peter Zignego,  All rights reserved.
+// Adapted to use Vapor by Philip Sidell
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
 // in the Software without restriction, including without limitation the rights
@@ -21,11 +21,10 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-
 public struct UserGroup {
-    
+
     public let id: String?
-    
+
     internal(set) public var teamID: String?
     public let isUserGroup: Bool?
     internal(set) public var name: String?
@@ -42,7 +41,7 @@ public struct UserGroup {
     internal(set) public var preferences: [String: Any]?
     internal(set) public var users: [String]?
     internal(set) public var userCount: Int?
-    
+
     internal init?(userGroup: [String: Any]?) {
         id = userGroup?["id"] as? String
         teamID = userGroup?["team_id"] as? String
@@ -64,5 +63,5 @@ public struct UserGroup {
             userCount = Int(count)
         }
     }
-    
+
 }

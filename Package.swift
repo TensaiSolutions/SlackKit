@@ -1,7 +1,8 @@
 //
 // Package.swift
 //
-// Copyright © 2016 Peter Zignego. All rights reserved.
+// Copyright © 2016 Peter Zignego All rights reserved.
+// Adapted to use Vapor by Philip Sidell
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -25,11 +26,8 @@ import PackageDescription
 
 let package = Package(
     name: "SlackKit",
-    targets: [],
     dependencies: [
-        .Package(url: "https://github.com/Zewo/WebSocketClient", majorVersion: 0, minor: 2),
-        .Package(url: "https://github.com/open-swift/C7.git", majorVersion: 0, minor: 8),
-        .Package(url: "https://github.com/czechboy0/Jay.git", majorVersion: 0, minor: 6),
-        ],
-    exclude: ["Examples"]
+        .Package(url: "https://github.com/vapor/vapor.git", majorVersion: 1, minor: 0)
+        //.Package(url: "https://github.com/vapor/vapor.git", majorVersion: 0, minor: 18)
+    ]
 )

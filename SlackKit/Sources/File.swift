@@ -1,8 +1,8 @@
 //
-// File.swift
+//  File.swift
 //
-// Copyright © 2016 Peter Zignego. All rights reserved.
-//
+// Copyright © 2016 Peter Zignego,  All rights reserved.
+// Adapted to use Vapor by Philip Sidell
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
 // in the Software without restriction, including without limitation the rights
@@ -61,7 +61,7 @@ public struct File {
     internal(set) public var pinnedTo: [String]?
     internal(set) public var comments = [String: Comment]()
     internal(set) public var reactions = [String: Reaction]()
-    
+
     public init?(file:[String: Any]?) {
         id = file?["id"] as? String
         created = file?["created"] as? Int
@@ -102,9 +102,9 @@ public struct File {
         if let reactions = file?["reactions"] as? [Any] {
             self.reactions = Reaction.reactionsFromArray(array: reactions)
         }
-        
+
     }
-    
+
     internal init?(id:String?) {
         self.id = id
         created = nil
@@ -141,4 +141,3 @@ extension File: Equatable {}
 public func ==(lhs: File, rhs: File) -> Bool {
     return lhs.id == rhs.id
 }
-    

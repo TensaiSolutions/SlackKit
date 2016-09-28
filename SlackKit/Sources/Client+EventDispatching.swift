@@ -1,8 +1,8 @@
 //
-// Client+EventDispatching.swift
+//  Client+EventDispatching.swift
 //
-// Copyright © 2016 Peter Zignego. All rights reserved.
-//
+// Copyright © 2016 Peter Zignego,  All rights reserved.
+// Adapted to use Vapor by Philip Sidell
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
 // in the Software without restriction, including without limitation the rights
@@ -22,7 +22,7 @@
 // THE SOFTWARE.
 
 internal extension SlackClient {
-    
+
     func dispatch(event: [String: Any]) {
         let event = Event(event: event)
         if let type = event.type {
@@ -31,112 +31,112 @@ internal extension SlackClient {
                 connected = true
                 slackEventsDelegate?.clientConnected()
             case .Ok:
-                messageSent(event: event)
+                messageSent(event)
             case .Message:
                 if (event.subtype != nil) {
                     messageDispatcher(event: event)
                 } else {
-                    messageReceived(event: event)
+                    messageReceived(event)
                 }
             case .UserTyping:
-                userTyping(event: event)
+                userTyping( event)
             case .ChannelMarked, .IMMarked, .GroupMarked:
-                channelMarked(event: event)
+                channelMarked( event)
             case .ChannelCreated, .IMCreated:
-                channelCreated(event: event)
+                channelCreated( event)
             case .ChannelJoined, .GroupJoined:
-                channelJoined(event: event)
+                channelJoined( event)
             case .ChannelLeft, .GroupLeft:
-                channelLeft(event: event)
+                channelLeft( event)
             case .ChannelDeleted:
-                channelDeleted(event: event)
+                channelDeleted( event)
             case .ChannelRenamed, .GroupRename:
-                channelRenamed(event: event)
+                channelRenamed( event)
             case .ChannelArchive, .GroupArchive:
-                channelArchived(event: event, archived: true)
+                channelArchived( event, archived: true)
             case .ChannelUnarchive, .GroupUnarchive:
-                channelArchived(event: event, archived: false)
+                channelArchived( event, archived: false)
             case .ChannelHistoryChanged, .IMHistoryChanged, .GroupHistoryChanged:
-                channelHistoryChanged(event: event)
+                channelHistoryChanged( event)
             case .DNDUpdated:
-                doNotDisturbUpdated(event: event)
+                doNotDisturbUpdated( event)
             case .DNDUpatedUser:
-                doNotDisturbUserUpdated(event: event)
+                doNotDisturbUserUpdated( event)
             case .IMOpen, .GroupOpen:
-                open(event: event, open: true)
+                open( event, open: true)
             case .IMClose, .GroupClose:
-                open(event: event, open: false)
+                open( event, open: false)
             case .FileCreated:
-                processFile(event: event)
+                processFile( event)
             case .FileShared:
-                processFile(event: event)
+                processFile( event)
             case .FileUnshared:
-                processFile(event: event)
+                processFile( event)
             case .FilePublic:
-                processFile(event: event)
+                processFile( event)
             case .FilePrivate:
-                filePrivate(event: event)
+                filePrivate( event)
             case .FileChanged:
-                processFile(event: event)
+                processFile( event)
             case .FileDeleted:
-                deleteFile(event: event)
+                deleteFile( event)
             case .FileCommentAdded:
-                fileCommentAdded(event: event)
+                fileCommentAdded( event)
             case .FileCommentEdited:
-                fileCommentEdited(event: event)
+                fileCommentEdited( event)
             case .FileCommentDeleted:
-                fileCommentDeleted(event: event)
+                fileCommentDeleted( event)
             case .PinAdded:
-                pinAdded(event: event)
+                pinAdded( event)
             case .PinRemoved:
-                pinRemoved(event: event)
+                pinRemoved( event)
             case .Pong:
-                pong(event: event)
+                pong( event)
             case .PresenceChange:
-                presenceChange(event: event)
+                presenceChange( event)
             case .ManualPresenceChange:
-                manualPresenceChange(event: event)
+                manualPresenceChange( event)
             case .PrefChange:
-                changePreference(event: event)
+                changePreference( event)
             case .UserChange:
-                userChange(event: event)
+                userChange( event)
             case .TeamJoin:
-                teamJoin(event: event)
+                teamJoin( event)
             case .StarAdded:
-                itemStarred(event: event, star: true)
+                itemStarred( event, star: true)
             case .StarRemoved:
-                itemStarred(event: event, star: false)
+                itemStarred( event, star: false)
             case .ReactionAdded:
-                addedReaction(event: event)
+                addedReaction( event)
             case .ReactionRemoved:
-                removedReaction(event: event)
+                removedReaction( event)
             case .EmojiChanged:
-                emojiChanged(event: event)
+                emojiChanged( event)
             case .CommandsChanged:
-                // This functionality is only used by our web client. 
-                // The other APIs required to support slash command metadata are currently unstable. 
+                // This functionality is only used by our web client.
+                // The other APIs required to support slash command metadata are currently unstable.
                 // Until they are released other clients should ignore this event.
                 break
             case .TeamPlanChange:
-                teamPlanChange(event: event)
+                teamPlanChange( event)
             case .TeamPrefChange:
-                teamPreferenceChange(event: event)
+                teamPreferenceChange( event)
             case .TeamRename:
-                teamNameChange(event: event)
+                teamNameChange( event)
             case .TeamDomainChange:
-                teamDomainChange(event: event)
+                teamDomainChange( event)
             case .EmailDomainChange:
-                emailDomainChange(event: event)
+                emailDomainChange( event)
             case .TeamProfileChange:
-                teamProfileChange(event: event)
+                teamProfileChange( event)
             case .TeamProfileDelete:
-                teamProfileDeleted(event: event)
+                teamProfileDeleted( event)
             case .TeamProfileReorder:
-                teamProfileReordered(event: event)
+                teamProfileReordered( event)
             case .BotAdded:
-                bot(event: event)
+                bot( event)
             case .BotChanged:
-                bot(event: event)
+                bot( event)
             case .AccountsChanged:
                 // The accounts_changed event is used by our web client to maintain a list of logged-in accounts.
                 // Other clients should ignore this event.
@@ -147,28 +147,28 @@ internal extension SlackClient {
                 // The reconnect_url event is currently unsupported and experimental.
                 break
             case .SubteamCreated, .SubteamUpdated:
-                subteam(event: event)
+                subteam( event)
             case .SubteamSelfAdded:
-                subteamAddedSelf(event: event)
+                subteamAddedSelf( event)
             case.SubteamSelfRemoved:
-                subteamRemovedSelf(event: event)
+                subteamRemovedSelf( event)
             case .Error:
                 print("Error: \(event)")
                 break
             }
         }
     }
-    
-    func messageDispatcher(event:Event) {
+
+    func messageDispatcher(event: Event) {
         let subtype = MessageSubtype(rawValue: event.subtype!)!
         switch subtype {
         case .MessageChanged:
-            messageChanged(event: event)
+            messageChanged( event)
         case .MessageDeleted:
-            messageDeleted(event: event)
+            messageDeleted( event)
         default:
-            messageReceived(event: event)
+            messageReceived( event)
         }
     }
-    
+
 }

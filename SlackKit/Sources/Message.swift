@@ -1,8 +1,8 @@
 //
-// Message.swift
+//  Message.swift
 //
-// Copyright © 2016 Peter Zignego. All rights reserved.
-//
+// Copyright © 2016 Peter Zignego,  All rights reserved.
+// Adapted to use Vapor by Philip Sidell
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
 // in the Software without restriction, including without limitation the rights
@@ -22,7 +22,7 @@
 // THE SOFTWARE.
 
 public class Message {
-    
+
     public let type = "message"
     public let subtype: String?
     internal(set) public var ts: String?
@@ -47,7 +47,7 @@ public class Message {
     public let file: File?
     internal(set) public var reactions = [String: Reaction]()
     internal(set) public var attachments: [Attachment]?
-    
+
     public init?(message: [String: Any]?) {
         subtype = message?["subtype"] as? String
         ts = message?["ts"] as? String
@@ -75,7 +75,7 @@ public class Message {
             return Attachment(attachment: attachment)
         })
     }
-    
+
     internal init?(ts:String?) {
         self.ts = ts
         subtype = nil
@@ -90,12 +90,12 @@ public class Message {
         comment = nil
         file = nil
     }
-    
+
     private func messageReactions(reactions: [Any]?) -> [String: Reaction] {
         var returnValue = [String: Reaction]()
         if let r = reactions {
             for react in r {
-                if let reaction = Reaction(reaction: react as? [String: Any]), reactionName = reaction.name {
+                if let reaction = Reaction(reaction: react as? [String: Any]), let reactionName = reaction.name {
                     returnValue[reactionName] = reaction
                 }
             }

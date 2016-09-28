@@ -1,8 +1,8 @@
 //
-// Message.swift
+//  Event.swift
 //
-// Copyright © 2016 Peter Zignego. All rights reserved.
-//
+// Copyright © 2016 Peter Zignego,  All rights reserved.
+// Adapted to use Vapor by Philip Sidell
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
 // in the Software without restriction, including without limitation the rights
@@ -122,7 +122,7 @@ internal enum MessageSubtype: String {
 }
 
 internal struct Event {
-    
+
     let type: EventType?
     let ts: String?
     let subtype: String?
@@ -158,7 +158,7 @@ internal struct Event {
     let subteam: UserGroup?
     let subteamID: String?
     var profile: CustomProfile?
-    
+
     init(event:[String: Any]) {
         if let eventType = event["type"] as? String {
             type = EventType(rawValue:eventType)
@@ -195,31 +195,31 @@ internal struct Event {
         message = Message(message: event)
         nestedMessage = Message(message: event["message"] as? [String: Any])
         profile = CustomProfile(profile: event["profile"] as? [String: Any])
-        
+
         // Comment, Channel, User, and File can come across as Strings or Dictionaries
         if (Comment(comment: event["comment"] as? [String: Any])?.id == nil) {
             comment = Comment(id: event["comment"] as? String)
         } else {
             comment = Comment(comment: event["comment"] as? [String: Any])
         }
-        
+
         if (User(user: event["user"] as? [String: Any])?.id == nil) {
             user = User(id: event["user"] as? String)
         } else {
             user = User(user: event["user"] as? [String: Any])
         }
-        
+
         if (File(file: event["file"] as? [String: Any])?.id == nil) {
             file = File(id: event["file"] as? String)
         } else {
             file = File(file: event["file"] as? [String: Any])
         }
-        
+
         if (Channel(channel: event["channel"] as? [String: Any])?.id == nil) {
             channel = Channel(id: event["channel"] as? String)
         } else {
             channel = Channel(channel: event["channel"] as? [String: Any])
         }
     }
-    
+
 }

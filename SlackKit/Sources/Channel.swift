@@ -1,8 +1,8 @@
 //
-// Channel.swift
+//  Channel.swift
 //
-// Copyright © 2016 Peter Zignego. All rights reserved.
-//
+// Copyright © 2016 Peter Zignego,  All rights reserved.
+// Adapted to use Vapor by Philip Sidell
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
 // in the Software without restriction, including without limitation the rights
@@ -22,7 +22,7 @@
 // THE SOFTWARE.
 
 public struct Channel {
-    
+
     public let id: String?
     public let created: Int?
     public let creator: String?
@@ -48,7 +48,7 @@ public struct Channel {
     internal(set) public var pinnedItems = [Item]()
     internal(set) public var usersTyping = [String]()
     internal(set) public var messages = [String: Message]()
-    
+
     internal init?(channel: [String: Any]?) {
         id = channel?["id"] as? String
         name = channel?["name"] as? String
@@ -70,14 +70,14 @@ public struct Channel {
         unreadCountDisplay = channel?["unread_count_display"] as? Int
         hasPins = channel?["has_pins"] as? Bool
         members = channel?["members"] as? [String]
-        
+
         if (Message(message: channel?["latest"] as? [String: Any])?.ts == nil) {
             latest = Message(ts: channel?["latest"] as? String)
         } else {
             latest = Message(message: channel?["latest"] as? [String: Any])
         }
     }
-    
+
     internal init?(id:String?) {
         self.id = id
         created = nil

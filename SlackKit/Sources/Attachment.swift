@@ -1,8 +1,8 @@
 //
-// Attachment.swift
+//  Attachment.swift
 //
-// Copyright © 2016 Peter Zignego. All rights reserved.
-//
+// Copyright © 2016 Peter Zignego,  All rights reserved.
+// Adapted to use Vapor by Philip Sidell
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
 // in the Software without restriction, including without limitation the rights
@@ -22,7 +22,7 @@
 // THE SOFTWARE.
 
 public struct Attachment {
-    
+
     public let fallback: String?
     public let color: String?
     public let pretext: String?
@@ -52,7 +52,7 @@ public struct Attachment {
             return AttachmentField(field: field)
         })
     }
-    
+
     public init?(fallback: String, title:String, colorHex: String? = nil, pretext: String? = nil, authorName: String? = nil, authorLink: String? = nil, authorIcon: String? = nil, titleLink: String? = nil, text: String? = nil, fields: [AttachmentField]? = nil, imageURL: String? = nil, thumbURL: String? = nil) {
         self.fallback = fallback
         self.color = colorHex
@@ -67,7 +67,7 @@ public struct Attachment {
         self.imageURL = imageURL
         self.thumbURL = thumbURL
     }
-    
+
     internal func dictionary() -> [String: Any] {
         var attachment = [String: Any]()
         attachment["fallback"] = fallback
@@ -84,7 +84,7 @@ public struct Attachment {
         attachment["thumb_url"] = thumbURL
         return attachment
     }
-    
+
     private func fieldJSONArray(fields: [AttachmentField]?) -> [Any] {
         var returnValue = [Any]()
         if let f = fields {
@@ -94,27 +94,27 @@ public struct Attachment {
         }
         return returnValue
     }
-    
+
 }
 
 public struct AttachmentField {
-    
+
     public let title: String?
     public let value: String?
     public let short: Bool?
-    
+
     internal init?(field: [String: Any]?) {
         title = field?["title"] as? String
         value = field?["value"] as? String
         short = field?["short"] as? Bool
     }
-    
+
     public init(title:String, value:String, short: Bool? = nil) {
         self.title = title
         self.value = value.slackFormatEscaping()
         self.short = short
     }
-    
+
     internal func dictionary() -> [String: Any] {
         var field = [String: Any]()
         field["title"] = title
@@ -122,7 +122,7 @@ public struct AttachmentField {
         field["short"] = short
         return field
     }
-    
+
 }
 
 public enum AttachmentColor: String {

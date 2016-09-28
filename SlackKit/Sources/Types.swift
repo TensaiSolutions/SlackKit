@@ -1,8 +1,8 @@
 //
-// Types.swift
-//
-// Copyright © 2016 Peter Zignego. All rights reserved.
-//
+//  Types.swift
+
+// Copyright © 2016 Peter Zignego,  All rights reserved.
+// Adapted to use Vapor by Philip Sidell
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
 // in the Software without restriction, including without limitation the rights
@@ -21,12 +21,11 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-
 // MARK: - Edited
 public struct Edited {
     public let user: String?
     public let ts: String?
-    
+
     internal init?(edited:[String: Any]?) {
         user = edited?["user"] as? String
         ts = edited?["ts"] as? String
@@ -38,9 +37,9 @@ public struct History {
     internal(set) public var latest: Double?
     internal(set) public var messages = [Message]()
     public let hasMore: Bool?
-    
+
     internal init?(history: [String: Any]?) {
-        if let latestStr = history?["latest"] as? String, latestDouble = Double(latestStr) {
+        if let latestStr = history?["latest"] as? String, let latestDouble = Double(latestStr) {
             latest = latestDouble
         }
         if let msgs = history?["messages"] as? [Any] {
@@ -58,21 +57,21 @@ public struct History {
 public struct Reaction {
     public let name: String?
     internal(set) public var users = [String: String]()
-    
+
     internal init?(reaction:[String: Any]?) {
         name = reaction?["name"] as? String
     }
-    
+
     internal init?(name: String?, user: String) {
         self.name = name
         users[user] = user
     }
-    
+
     internal init?(name: String?, users: [String: String]) {
         self.name = name
         self.users = users
     }
-    
+
     static func reactionsFromArray(array: [Any]) -> [String: Reaction] {
         var reactions = [String: Reaction]()
         var userDictionary = [String: String]()
@@ -90,7 +89,7 @@ public struct Reaction {
         }
         return reactions
     }
-    
+
 }
 
 extension Reaction: Equatable {}
@@ -108,7 +107,7 @@ public struct Comment {
     internal(set) public var starred: Bool?
     internal(set) public var stars: Int?
     internal(set) public var reactions = [String: Reaction]()
-    
+
     internal init?(comment:[String: Any]?) {
         id = comment?["id"] as? String
         created = comment?["created"] as? Int
@@ -117,7 +116,7 @@ public struct Comment {
         stars = comment?["num_stars"] as? Int
         self.comment = comment?["comment"] as? String
     }
-    
+
     internal init?(id: String?) {
         self.id = id
         self.user = nil
@@ -139,14 +138,14 @@ public struct Item {
     public let file: File?
     public let comment: Comment?
     public let fileCommentID: String?
-    
+
     internal init?(item:[String: Any]?) {
         type = item?["type"] as? String
         ts = item?["ts"] as? String
         channel = item?["channel"] as? String
-        
+
         message = Message(message: item?["message"] as? [String: Any])
-        
+
         // Comment and File can come across as Strings or Dictionaries
         if (Comment(comment: item?["comment"] as? [String: Any])?.id == nil) {
             comment = Comment(id: item?["comment"] as? String)
@@ -158,7 +157,7 @@ public struct Item {
         } else {
             file = File(file: item?["file"] as? [String: Any])
         }
-        
+
         fileCommentID = item?["file_comment"] as? String
     }
 }
@@ -174,7 +173,7 @@ public struct Topic {
     public let value: String?
     public let creator: String?
     public let lastSet: Int?
-    
+
     internal init?(topic: [String: Any]?) {
         value = topic?["value"] as? String
         creator = topic?["creator"] as? String
@@ -189,7 +188,7 @@ public struct DoNotDisturbStatus {
     internal(set) public var nextDoNotDisturbEnd: Int?
     internal(set) public var snoozeEnabled: Bool?
     internal(set) public var snoozeEndtime: Int?
-    
+
     internal init?(status: [String: Any]?) {
         enabled = status?["dnd_enabled"] as? Bool
         nextDoNotDisturbStart = status?["next_dnd_start_ts"] as? Int
@@ -197,27 +196,27 @@ public struct DoNotDisturbStatus {
         snoozeEnabled = status?["snooze_enabled"] as? Bool
         snoozeEndtime = status?["snooze_endtime"] as? Int
     }
-    
+
 }
 
 // MARK - Custom Team Profile
 public struct CustomProfile {
     internal(set) public var fields = [String: CustomProfileField]()
-    
+
     internal init?(profile: [String: Any]?) {
         if let eventFields = profile?["fields"] as? [Any] {
             for field in eventFields {
-                if let cpf = CustomProfileField(field: field as? [String: Any]), id = cpf.id {
+                if let cpf = CustomProfileField(field: field as? [String: Any]), let id = cpf.id {
                     fields[id] = cpf
                 } else {
-                    if let cpf = CustomProfileField(id: field as? String), id = cpf.id {
+                    if let cpf = CustomProfileField(id: field as? String), let id = cpf.id {
                         fields[id] = cpf
                     }
                 }
             }
         }
     }
-    
+
     internal init?(customFields: [String: Any]?) {
         if let customFields = customFields {
             for key in customFields.keys {
@@ -227,7 +226,7 @@ public struct CustomProfile {
             }
         }
     }
-    
+
 }
 
 public struct CustomProfileField {
@@ -241,7 +240,7 @@ public struct CustomProfileField {
     internal(set) public var ordering: Int?
     internal(set) public var possibleValues: [String]?
     internal(set) public var type: String?
-    
+
     internal init?(field: [String: Any]?) {
         id = field?["id"] as? String
         alt = field?["alt"] as? String
@@ -254,11 +253,11 @@ public struct CustomProfileField {
         possibleValues = field?["possible_values"] as? [String]
         type = field?["type"] as? String
     }
-    
+
     internal init?(id: String?) {
         self.id = id
     }
-    
+
     internal mutating func updateProfileField(profile: CustomProfileField?) {
         id = profile?.id != nil ? profile?.id : id
         alt = profile?.alt != nil ? profile?.alt : alt

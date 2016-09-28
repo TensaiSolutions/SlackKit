@@ -1,8 +1,8 @@
 //
-// Client.swift
+//  Client.swift
 //
-// Copyright © 2016 Peter Zignego. All rights reserved.
-//
+// Copyright © 2016 Peter Zignego,  All rights reserved.
+// Adapted to use Vapor by Philip Sidell
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
 // in the Software without restriction, including without limitation the rights
@@ -21,25 +21,26 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-import C7
+import Foundation
 import Jay
-import Venice
-import WebSocketClient
+import Vapor
+import HTTP
+
 
 public class SlackClient {
-    
+
     internal(set) public var connected = false
     internal(set) public var authenticated = false
     internal(set) public var authenticatedUser: User?
     internal(set) public var team: Team?
-    
+
     internal(set) public var channels = [String: Channel]()
     internal(set) public var users = [String: User]()
     internal(set) public var userGroups = [String: UserGroup]()
     internal(set) public var bots = [String: Bot]()
     internal(set) public var files = [String: File]()
     internal(set) public var sentMessages = [String: Message]()
-    
+
     //MARK: - Delegates
     public weak var slackEventsDelegate: SlackEventsDelegate?
     public weak var messageEventsDelegate: MessageEventsDelegate?
@@ -53,61 +54,57 @@ public class SlackClient {
     public weak var teamEventsDelegate: TeamEventsDelegate?
     public weak var subteamEventsDelegate: SubteamEventsDelegate?
     public weak var teamProfileEventsDelegate: TeamProfileEventsDelegate?
-    
+
     internal var token = "SLACK_AUTH_TOKEN"
-    
+
     public func setAuthToken(token: String) {
         self.token = token
     }
-    
+
     public var webAPI: SlackWebAPI {
         return SlackWebAPI(slackClient: self)
     }
 
-    internal var webSocket: Client?
     internal var socket: WebSocket?
     internal let api = NetworkInterface()
-    
+
+
     internal var ping: Double?
     internal var pong: Double?
-    
+
     internal var pingInterval: Double?
     internal var timeout: Double?
     internal var reconnect: Bool?
-    
+
     required public init(apiToken: String) {
         self.token = apiToken
     }
-    
+
     public func connect(simpleLatest: Bool? = nil, noUnreads: Bool? = nil, mpimAware: Bool? = nil, pingInterval: Double? = nil, timeout: Double? = nil, reconnect: Bool? = nil) {
         self.pingInterval = pingInterval
         self.timeout = timeout
         self.reconnect = reconnect
+
+
+
         webAPI.rtmStart(simpleLatest: simpleLatest, noUnreads: noUnreads, mpimAware: mpimAware, success: {
             (response) -> Void in
             self.initialSetup(json: response)
             if let socketURL = response["url"] as? String {
                 do {
-                    let uri = try URI(socketURL)
-                    self.webSocket = try Client(uri: uri, didConnect: {(socket) in
-                        self.setupSocket(socket: socket)
-                        if let pingInterval = self.pingInterval {
-                            self.pingRTMServerAtInterval(interval: pingInterval)
-                        }
-                    })
-                    try self.webSocket?.connect(uri.description)
-                } catch _ {
-                    
+
+                    try WebSocket.connect(to: socketURL) {
+                        ws in
+                        print("Connected to \(socketURL)")
+                        self.setupSocket(socket: ws)
+                    }
+                } catch {
+
                 }
             }
-            }, failure:nil)
+           }, failure:nil)
     }
-    
-    /*TO-DO: Bug in Zewo/WebSocket
-    public func disconnect() {
-        _ = try? socket?.close()
-    }*/
-    
+
     //MARK: - RTM Message send
     public func sendMessage(message: String, channelID: String) {
         if (connected) {
@@ -118,7 +115,7 @@ public class SlackClient {
             }
         }
     }
-    
+
     private func formatMessageToSlackJsonString(message: String, channel: String) -> Data? {
         let json: [String: Any] = [
             "id": Time.slackTimestamp(),
@@ -126,15 +123,15 @@ public class SlackClient {
             "channel": channel,
             "text": message.slackFormatEscaping()
         ]
-        
+
         do {
-            let bytes = try Jay().dataFromJson(json)
+            let bytes = try Jay().dataFromJson(any: json)
             return Data(bytes)
         } catch {
             return nil
         }
     }
-    
+
     private func addSentMessage(dictionary: [String: Any]) {
         var message = dictionary
         let ts = message["id"] as? Int
@@ -143,50 +140,7 @@ public class SlackClient {
         message["user"] = self.authenticatedUser?.id
         sentMessages["\(ts)"] = Message(message: message)
     }
-    
-    //MARK: - RTM Ping
-    private func pingRTMServerAtInterval(interval: Double) {
-        co { [weak self] in
-            let weakSelf = self
-            repeat {
-                nap(for: interval)
-                weakSelf?.sendRTMPing()
-            } while weakSelf?.connected == true && weakSelf?.timeoutCheck() == true
-            //weakSelf?.disconnect()
-        }
-    }
-    
-    private func sendRTMPing() {
-        if connected {
-            let json: [String: Any] = [
-                "id": Double.slackTimestamp(),
-                "type": "ping",
-            ]
-            do {
-                let data = try Jay().dataFromJson(json)
-                let string = try data.string()
-                ping = json["id"] as? Double
-                try socket?.send(string)
-            }
-            catch _ {
-                
-            }
-        }
-    }
-    
-    private func timeoutCheck() -> Bool {
-        if let pong = pong, ping = ping, timeout = timeout {
-            if pong - ping < timeout {
-                return true
-            } else {
-                return false
-            }
-        // Ping-pong or timeout not configured
-        } else {
-            return true
-        }
-    }
-    
+
     //MARK: - Client setup
     private func initialSetup(json: [String: Any]) {
         team = Team(team: json["team"] as? [String: Any])
@@ -200,25 +154,25 @@ public class SlackClient {
         enumerateObjects(array: json["bots"] as? Array) { (bots) in self.addBot(aBot: bots) }
         enumerateSubteams(subteams: json["subteams"] as? [String: Any])
     }
-    
+
     private func addUser(aUser: [String: Any]) {
-        if let user = User(user: aUser), id = user.id {
+        if let user = User(user: aUser), let id = user.id {
             users[id] = user
         }
     }
-    
+
     private func addChannel(aChannel: [String: Any]) {
-        if let channel = Channel(channel: aChannel), id = channel.id {
+        if let channel = Channel(channel: aChannel), let id = channel.id {
             channels[id] = channel
         }
     }
-    
+
     private func addBot(aBot: [String: Any]) {
-        if let bot = Bot(bot: aBot), id = bot.id {
+        if let bot = Bot(bot: aBot), let id = bot.id {
             bots[id] = bot
         }
     }
-    
+
     private func enumerateSubteams(subteams: [String: Any]?) {
         if let subteams = subteams {
             if let all = subteams["all"] as? [Any] {
@@ -235,7 +189,7 @@ public class SlackClient {
             }
         }
     }
-    
+
     // MARK: - Utilities
     private func enumerateObjects(array: [Any]?, initalizer: ([String: Any])-> Void) {
         if let array = array {
@@ -246,38 +200,46 @@ public class SlackClient {
             }
         }
     }
-    
-    
+
+
     // MARK: - WebSocket
+
     private func setupSocket(socket: WebSocket) {
-        socket.onText {(message) in
-            self.websocketDidReceive(message: message)
-        }
-        socket.onPing { (data) in try socket.pong() }
-        socket.onPong { (data) in try socket.ping() }
-        socket.onClose{ (code: CloseCode?, reason: String?) in
-            self.websocketDidDisconnect(closeCode: code, error: reason)
-        }
-        self.socket = socket
-    }
-    
-    private func websocketDidReceive(message: String) {
-        do {
-            let json = try Jay().jsonFromData(message.data.bytes)
-            if let event = json as? [String: Any] {
-                dispatch(event:event)
-            }
-        }
-        catch _ {
-            
+        socket.onText = { ws, text in
+            print("[event] - \(text)")
+            self.websocketDidReceive(message: text)
         }
 
+        socket.onPing = { ws, frame in
+            try ws.pong()
+        }
+
+        socket.onPong = { ws, frame in
+            try ws.ping()
+        }
+
+        socket.onClose = { _, code, reason, clean in
+            print("[ws close] \(clean ? "clean" : "dirty") \(code?.description ?? "") \(reason ?? "")")
+            self.websocketDidDisconnect()
+        }
+
+        self.socket = socket
     }
-    
-    private func websocketDidDisconnect(closeCode: CloseCode?, error: String?) {
+
+    private func websocketDidReceive(message: String) {
+        do {
+
+              if let json = try Jay().anyJsonFromData((message.data(using: String.Encoding.utf8)?.makeBytes())!) as? [String:Any] {
+                dispatch(event: json)
+              }
+            } catch {
+
+            }
+    }
+
+    private func websocketDidDisconnect() {
         connected = false
         authenticated = false
-        webSocket = nil
         socket = nil
         authenticatedUser = nil
         slackEventsDelegate?.clientDisconnected()
@@ -285,5 +247,5 @@ public class SlackClient {
             connect(pingInterval: pingInterval, timeout: timeout, reconnect: reconnect)
         }
     }
-    
+
 }

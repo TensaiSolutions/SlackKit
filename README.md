@@ -1,7 +1,7 @@
 ![SlackKit](https://cloud.githubusercontent.com/assets/8311605/10260893/5ec60f96-694e-11e5-91fd-da6845942201.png)
 
-![Swift Version](https://img.shields.io/badge/Swift-DEVELOPMENT--SNAPSHOT--2016--05--09--a-orange.svg) ![Plaforms](https://img.shields.io/badge/Platforms-macOS,linux-lightgrey.svg) ![License MIT](https://img.shields.io/badge/License-MIT-lightgrey.svg) [![SwiftPM compatible](https://img.shields.io/badge/SwiftPM-compatible-brightgreen.svg)](https://github.com/apple/swift-package-manager)
-##Alpha Linux Slack Client Library
+![Swift Version](https://img.shields.io/badge/Swift-3.0-orange.svg) ![Plaforms](https://img.shields.io/badge/Platforms-macOS,linux-lightgrey.svg) ![License MIT](https://img.shields.io/badge/License-MIT-lightgrey.svg) [![SwiftPM compatible](https://img.shields.io/badge/SwiftPM-compatible-brightgreen.svg)](https://github.com/apple/swift-package-manager)
+##Linux Slack Client Library using the Vapor Framework
 ###Description
 This is a Slack client library for Linux written in Swift. It's intended to expose all of the functionality of Slack's [Real Time Messaging API](https://api.slack.com/rtm) as well as the [web APIs](https://api.slack.com/web) that are accessible by [bot users](https://api.slack.com/bot-users).
 
@@ -23,17 +23,7 @@ let package = Package(
 ```
 
 ####Development
-1. Install Homebrew: `/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"`
-2. Install `swiftenv`: `brew install kylef/formulae/swiftenv`
-3. Configure your shell: `echo 'if which swiftenv > /dev/null; then eval "$(swiftenv init -)"; fi' >> ~/.bash_profile`
-4. Download and install the latest Zewo compatible snapshot:
-```
-swiftenv install DEVELOPMENT-SNAPSHOT-2016-05-09-a
-swiftenv local DEVELOPMENT-SNAPSHOT-2016-05-09-a
-```
-5. Install and Link OpenSSL: `brew install openssl`, `brew link openssl --force`
-
-To build an application that uses SlackKit in Xcode, simply use SwiftPM. (For the 05-03 snapshot you must run `swift build` before generating an Xcode project:
+To build an application that uses SlackKit in Xcode, simply use SwiftPM.
 ```
 swift build
 swift build -Xlinker -L$(pwd)/.build/debug/ -Xswiftc -I/usr/local/include -Xlinker -L/usr/local/lib -X

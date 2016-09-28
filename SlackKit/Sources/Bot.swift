@@ -1,8 +1,8 @@
 //
-// Bot.swift
+//  Bot.swift
 //
-// Copyright © 2016 Peter Zignego. All rights reserved.
-//
+// Copyright © 2016 Peter Zignego,  All rights reserved.
+// Adapted to use Vapor by Philip Sidell
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
 // in the Software without restriction, including without limitation the rights
@@ -22,15 +22,15 @@
 // THE SOFTWARE.
 
 public struct Bot {
-    
+
     public let id: String?
     internal(set) public var name: String?
     internal(set) public var icons: [String: Any]?
-    
+
     internal init?(bot: [String: Any]?) {
         id = bot?["id"] as? String
         name = bot?["name"] as? String
         icons = bot?["icons"] as? [String: Any]
     }
-    
+
 }

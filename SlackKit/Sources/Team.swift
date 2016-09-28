@@ -1,8 +1,8 @@
 //
-// Team.swift
+//  Team.swift
 //
-// Copyright © 2016 Peter Zignego. All rights reserved.
-//
+// Copyright © 2016 Peter Zignego,  All rights reserved.
+// Adapted to use Vapor by Philip Sidell
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
 // in the Software without restriction, including without limitation the rights
@@ -22,7 +22,7 @@
 // THE SOFTWARE.
 
 public struct Team {
-    
+
     public let id: String
     internal(set) public var name: String?
     internal(set) public var domain: String?
@@ -32,7 +32,7 @@ public struct Team {
     internal(set) public var prefs: [String: Any]?
     internal(set) public var plan: String?
     internal(set) public var icon: TeamIcon?
-    
+
     internal init?(team: [String: Any]?) {
         id = team?["id"] as! String
         name = team?["name"] as? String
@@ -55,7 +55,7 @@ public struct TeamIcon {
     internal(set) public var image132: String?
     internal(set) public var imageOriginal: String?
     internal(set) public var imageDefault: Bool?
-    
+
     internal init?(icon: [String: Any]?) {
         image34 = icon?["image_34"] as? String
         image44 = icon?["image_44"] as? String
@@ -67,4 +67,3 @@ public struct TeamIcon {
         imageDefault = icon?["image_default"] as? Bool
     }
 }
-

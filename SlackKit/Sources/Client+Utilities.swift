@@ -1,8 +1,8 @@
 //
-// Client+Utilities.swift
+//  Client+Utilities.swift
 //
-// Copyright © 2016 Peter Zignego. All rights reserved.
-//
+// Copyright © 2016 Peter Zignego,  All rights reserved.
+// Adapted to use Vapor by Philip Sidell
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
 // in the Software without restriction, including without limitation the rights
@@ -22,26 +22,26 @@
 // THE SOFTWARE.
 
 extension SlackClient {
-    
+
     //MARK: - User & Channel
     public func getChannelIDByName(name: String) -> String? {
         return channels.filter{$0.1.name == stripString(string: name)}.first?.0
     }
-    
+
     public func getUserIDByName(name: String) -> String? {
         return users.filter{$0.1.name == stripString(string: name)}.first?.0
     }
-    
-    public func getImIDForUserWithID(id: String, success: (imID: String?)->Void, failure: (error: SlackError)->Void) {
+
+    public func getImIDForUserWithID(id: String, success: @escaping (_ imID: String?)->Void, failure: @escaping (_ error: SlackError)->Void) {
         let ims = channels.filter{$0.1.isIM == true}
         let channel = ims.filter{$0.1.user == id}.first
         if let channel = channel {
-            success(imID: channel.0)
+            success(channel.0)
         } else {
             webAPI.openIM(userID: id, success: success, failure: failure)
         }
     }
-    
+
     //MARK: - Utilities
     internal func stripString(string: String) -> String? {
         var strippedString = string

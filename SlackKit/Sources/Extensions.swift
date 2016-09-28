@@ -1,8 +1,8 @@
 //
-// Extensions.swift
+//  Extensions.swift
 //
-// Copyright © 2016 Peter Zignego. All rights reserved.
-//
+// Copyright © 2016 Peter Zignego,  All rights reserved.
+// Adapted to use Vapor by Philip Sidell
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
 // in the Software without restriction, including without limitation the rights
@@ -21,7 +21,9 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-import C7
+import Foundation
+import Jay
+
 #if os(Linux)
     import Glibc
 #else
@@ -31,51 +33,54 @@ import C7
 public typealias Time=Double
 
 public extension Double {
-    
+
     static func slackTimestamp() -> Double {
         #if os(Linux)
             return Double(time(nil))
         #else
             var clock: clock_serv_t = clock_serv_t()
             var timeSpecBuffer: mach_timespec_t = mach_timespec_t(tv_sec: 0, tv_nsec: 0)
-            
+
             host_get_clock_service(mach_host_self(), CALENDAR_CLOCK, &clock)
             clock_get_time(clock, &timeSpecBuffer)
             mach_port_deallocate(mach_task_self_, clock)
-            
+
             return Double(timeSpecBuffer.tv_sec) + Double(timeSpecBuffer.tv_nsec) * 0.000000001
         #endif
     }
-    
+
 }
 
 internal extension String {
-    
+
     func slackFormatEscaping() -> String {
         var escapedString = self
-        escapedString.replace(string: "&", with: "&amp;")
-        escapedString.replace(string: "<", with: "&lt;")
-        escapedString.replace(string: ">", with: "&gt;")
+        escapedString = escapedString.replacingOccurrences(of: "&", with: "&amp;")
+        //escapedString.replace(string: "&", with: "&amp;")
+        escapedString = escapedString.replacingOccurrences(of: "<", with: "&lt;")
+        //escapedString.replace(string: "<", with: "&lt;")
+        escapedString = escapedString.replacingOccurrences(of: ">", with: "&gt;")
+        //escapedString.replace(string: ">", with: "&gt;")
         return escapedString
     }
-    
+
 }
 
 public extension String {
-    
+
     func contains(query: String, caseSensitive: Bool = false) -> Bool {
         if query.isEmpty { return true }
         let (s, q) = caseSensitive ? (self, query) : (self.lowercased(), query.lowercased())
         var chars = s.characters; let qchars = q.characters
-        
+
         while !chars.isEmpty {
             if chars.starts(with: qchars) { return true }
             chars.removeFirst()
         }
-        
+
         return false
     }
-    
+
     func prefixedBy(query: String, caseSensitive: Bool = false) -> Bool {
         let (s, q) = caseSensitive ? (self, query) : (self.lowercased(), query.lowercased())
         return s.characters.starts(with: q.characters)
@@ -95,5 +100,23 @@ internal extension Array {
         }
         return returnValue
     }
-    
+
+}
+
+
+
+internal extension Dictionary where Key: ExpressibleByStringLiteral, Value: Any {
+
+    var requestStringFromParameters: String {
+        var requestString = ""
+        for key in self.keys {
+            if let value = self[key] as? String, let encodedValue = value.addingPercentEncoding(withAllowedCharacters: CharacterSet.urlHostAllowed) {
+                requestString += "&\(key)=\(encodedValue)"
+            } else if let value = self[key] as? Int {
+                requestString += "&\(key)=\(value)"
+            }
+        }
+
+        return requestString
+    }
 }

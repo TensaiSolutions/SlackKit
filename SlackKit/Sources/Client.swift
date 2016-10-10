@@ -75,9 +75,13 @@ public class SlackClient {
     internal var pingInterval: Double?
     internal var timeout: Double?
     internal var reconnect: Bool?
+    
+    public var callbackQueue = DispatchQueue.main
+    
 
     required public init(apiToken: String) {
         self.token = apiToken
+        
     }
 
     public func connect(simpleLatest: Bool? = nil, noUnreads: Bool? = nil, mpimAware: Bool? = nil, pingInterval: Double? = nil, timeout: Double? = nil, reconnect: Bool? = nil) {
@@ -93,7 +97,7 @@ public class SlackClient {
             if let socketURL = response["url"] as? String {
                 do {
 
-                    try WebSocket.connect(to: socketURL) {
+                    try WebSocket.background(to: socketURL) {
                         ws in
                         print("Connected to \(socketURL)")
                         self.setupSocket(socket: ws)
@@ -207,7 +211,10 @@ public class SlackClient {
     private func setupSocket(socket: WebSocket) {
         socket.onText = { ws, text in
             print("[event] - \(text)")
-            self.websocketDidReceive(message: text)
+            
+            self.callbackQueue.async {
+                self.websocketDidReceive(message: text)
+            }
         }
 
         socket.onPing = { ws, frame in
@@ -247,5 +254,4 @@ public class SlackClient {
             connect(pingInterval: pingInterval, timeout: timeout, reconnect: reconnect)
         }
     }
-
 }

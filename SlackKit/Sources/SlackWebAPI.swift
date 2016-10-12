@@ -706,7 +706,7 @@ public class SlackWebAPI {
             var attachmentArray: [Any] = []
             for attachment in attachments {
                 if let attachment = attachment {
-                    attachmentArray.append(attachment.dictionary())
+                    attachmentArray.append(attachment.dictionary)
                 }
             }
             do {

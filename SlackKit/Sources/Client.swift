@@ -25,6 +25,7 @@ import Foundation
 import Jay
 import Vapor
 import HTTP
+import Dispatch
 
 
 public class SlackClient {
